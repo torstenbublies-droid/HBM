@@ -8,329 +8,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// drizzle/schema.ts
-var schema_exports = {};
-__export(schema_exports, {
-  alerts: () => alerts,
-  chatLogs: () => chatLogs,
-  clubs: () => clubs,
-  contactMessages: () => contactMessages,
-  contactStatusEnum: () => contactStatusEnum,
-  councilMeetings: () => councilMeetings,
-  departments: () => departments,
-  events: () => events,
-  institutions: () => institutions,
-  issueReports: () => issueReports,
-  issueStatusEnum: () => issueStatusEnum,
-  mayorInfo: () => mayorInfo,
-  news: () => news,
-  notificationPriorityEnum: () => notificationPriorityEnum,
-  notificationTypeEnum: () => notificationTypeEnum,
-  pois: () => pois,
-  priorityEnum: () => priorityEnum,
-  pushNotifications: () => pushNotifications,
-  roleEnum: () => roleEnum,
-  scrapingLog: () => scrapingLog,
-  tenants: () => tenants,
-  userNotifications: () => userNotifications,
-  userPreferences: () => userPreferences,
-  users: () => users,
-  wasteSchedule: () => wasteSchedule,
-  websiteChunks: () => websiteChunks
-});
-import { pgTable, text, timestamp, varchar, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
-var roleEnum, issueStatusEnum, priorityEnum, contactStatusEnum, notificationTypeEnum, notificationPriorityEnum, tenants, users, news, events, departments, issueReports, wasteSchedule, alerts, pois, institutions, councilMeetings, mayorInfo, clubs, chatLogs, userPreferences, contactMessages, pushNotifications, userNotifications, websiteChunks, scrapingLog;
-var init_schema = __esm({
-  "drizzle/schema.ts"() {
-    "use strict";
-    roleEnum = pgEnum("role", ["user", "admin", "tenant_admin"]);
-    issueStatusEnum = pgEnum("issue_status", ["eingegangen", "in_bearbeitung", "erledigt"]);
-    priorityEnum = pgEnum("priority", ["low", "medium", "high", "critical"]);
-    contactStatusEnum = pgEnum("contact_status", ["neu", "in_bearbeitung", "erledigt"]);
-    notificationTypeEnum = pgEnum("notification_type", ["info", "warning", "danger", "event"]);
-    notificationPriorityEnum = pgEnum("notification_priority", ["low", "medium", "high", "urgent"]);
-    tenants = pgTable("tenants", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      name: varchar("name", { length: 200 }).notNull(),
-      // z.B. "Schieder-Schwalenberg"
-      slug: varchar("slug", { length: 100 }).notNull().unique(),
-      // z.B. "schieder"
-      // Branding
-      primaryColor: varchar("primaryColor", { length: 20 }).default("#0066CC"),
-      // Hauptfarbe
-      secondaryColor: varchar("secondaryColor", { length: 20 }).default("#00A86B"),
-      // Akzentfarbe
-      logoUrl: varchar("logoUrl", { length: 1e3 }),
-      heroImageUrl: varchar("heroImageUrl", { length: 1e3 }),
-      // Kontakt
-      contactEmail: varchar("contactEmail", { length: 320 }),
-      contactPhone: varchar("contactPhone", { length: 50 }),
-      contactAddress: text("contactAddress"),
-      // Wetter
-      weatherLat: varchar("weatherLat", { length: 50 }),
-      // Breitengrad
-      weatherLon: varchar("weatherLon", { length: 50 }),
-      // Längengrad
-      weatherCity: varchar("weatherCity", { length: 200 }),
-      // Stadt-Name für Wetter
-      // Chatbot
-      chatbotName: varchar("chatbotName", { length: 100 }).default("Chatbot"),
-      chatbotSystemPrompt: text("chatbotSystemPrompt"),
-      // Custom System-Prompt
-      // Features (optional - für spätere Erweiterung)
-      enabledFeatures: text("enabledFeatures"),
-      // JSON: ["news", "events", "waste", ...]
-      // Meta
-      isActive: boolean("isActive").default(true).notNull(),
-      createdAt: timestamp("createdAt").defaultNow(),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    users = pgTable("users", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).references(() => tenants.id, { onDelete: "cascade" }),
-      name: text("name"),
-      email: varchar("email", { length: 320 }),
-      loginMethod: varchar("loginMethod", { length: 64 }),
-      role: roleEnum("role").default("user").notNull(),
-      oneSignalPlayerId: varchar("oneSignalPlayerId", { length: 64 }),
-      pushEnabled: boolean("pushEnabled").default(true).notNull(),
-      createdAt: timestamp("createdAt").defaultNow(),
-      lastSignedIn: timestamp("lastSignedIn").defaultNow()
-    });
-    news = pgTable("news", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      title: varchar("title", { length: 500 }).notNull(),
-      teaser: text("teaser"),
-      bodyMD: text("bodyMD"),
-      imageUrl: varchar("imageUrl", { length: 1e3 }),
-      category: varchar("category", { length: 100 }),
-      publishedAt: timestamp("publishedAt").notNull(),
-      sourceUrl: varchar("sourceUrl", { length: 1e3 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    events = pgTable("events", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      title: varchar("title", { length: 500 }).notNull(),
-      description: text("description"),
-      startDate: timestamp("startDate").notNull(),
-      endDate: timestamp("endDate"),
-      location: varchar("location", { length: 500 }),
-      latitude: varchar("latitude", { length: 50 }),
-      longitude: varchar("longitude", { length: 50 }),
-      imageUrl: varchar("imageUrl", { length: 1e3 }),
-      ticketLink: varchar("ticketLink", { length: 1e3 }),
-      category: varchar("category", { length: 100 }),
-      cost: varchar("cost", { length: 200 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    departments = pgTable("departments", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      name: varchar("name", { length: 500 }).notNull(),
-      description: text("description"),
-      responsibilities: text("responsibilities"),
-      contactName: varchar("contactName", { length: 200 }),
-      phone: varchar("phone", { length: 50 }),
-      email: varchar("email", { length: 320 }),
-      address: text("address"),
-      openingHours: text("openingHours"),
-      appointmentLink: varchar("appointmentLink", { length: 1e3 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    issueReports = pgTable("issueReports", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      userId: varchar("userId", { length: 64 }),
-      category: varchar("category", { length: 100 }).notNull(),
-      description: text("description").notNull(),
-      latitude: varchar("latitude", { length: 50 }),
-      longitude: varchar("longitude", { length: 50 }),
-      address: varchar("address", { length: 500 }),
-      photoUrl: varchar("photoUrl", { length: 1e3 }),
-      status: issueStatusEnum("status").default("eingegangen").notNull(),
-      contactEmail: varchar("contactEmail", { length: 320 }),
-      contactPhone: varchar("contactPhone", { length: 50 }),
-      ticketNumber: varchar("ticketNumber", { length: 50 }).notNull(),
-      createdAt: timestamp("createdAt").defaultNow(),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    wasteSchedule = pgTable("wasteSchedule", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      wasteType: varchar("wasteType", { length: 100 }).notNull(),
-      collectionDate: timestamp("collectionDate").notNull(),
-      district: varchar("district", { length: 200 }),
-      street: varchar("street", { length: 500 }),
-      route: varchar("route", { length: 100 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    alerts = pgTable("alerts", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      type: varchar("type", { length: 100 }).notNull(),
-      title: varchar("title", { length: 500 }).notNull(),
-      message: text("message").notNull(),
-      priority: priorityEnum("priority").default("medium").notNull(),
-      validUntil: timestamp("validUntil"),
-      category: varchar("category", { length: 100 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    pois = pgTable("pois", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      name: varchar("name", { length: 500 }).notNull(),
-      description: text("description"),
-      category: varchar("category", { length: 100 }),
-      latitude: varchar("latitude", { length: 50 }),
-      longitude: varchar("longitude", { length: 50 }),
-      address: varchar("address", { length: 500 }),
-      imageUrl: varchar("imageUrl", { length: 1e3 }),
-      websiteUrl: varchar("websiteUrl", { length: 1e3 }),
-      openingHours: text("openingHours"),
-      pricing: text("pricing"),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    institutions = pgTable("institutions", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      name: varchar("name", { length: 500 }).notNull(),
-      type: varchar("type", { length: 100 }).notNull(),
-      description: text("description"),
-      contactName: varchar("contactName", { length: 200 }),
-      phone: varchar("phone", { length: 50 }),
-      email: varchar("email", { length: 320 }),
-      address: text("address"),
-      websiteUrl: varchar("websiteUrl", { length: 1e3 }),
-      registrationInfo: text("registrationInfo"),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    councilMeetings = pgTable("councilMeetings", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      title: varchar("title", { length: 500 }).notNull(),
-      meetingDate: timestamp("meetingDate").notNull(),
-      committee: varchar("committee", { length: 200 }),
-      agendaUrl: varchar("agendaUrl", { length: 1e3 }),
-      minutesUrl: varchar("minutesUrl", { length: 1e3 }),
-      location: varchar("location", { length: 500 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    mayorInfo = pgTable("mayorInfo", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      name: varchar("name", { length: 200 }).notNull(),
-      party: varchar("party", { length: 100 }),
-      position: varchar("position", { length: 200 }),
-      photoUrl: varchar("photoUrl", { length: 1e3 }),
-      email: varchar("email", { length: 320 }),
-      phone: varchar("phone", { length: 50 }),
-      bio: text("bio"),
-      calendarUrl: varchar("calendarUrl", { length: 1e3 }),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    clubs = pgTable("clubs", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      name: varchar("name", { length: 500 }).notNull(),
-      category: varchar("category", { length: 100 }),
-      description: text("description"),
-      contactName: varchar("contactName", { length: 200 }),
-      phone: varchar("phone", { length: 50 }),
-      email: varchar("email", { length: 320 }),
-      websiteUrl: varchar("websiteUrl", { length: 1e3 }),
-      logoUrl: varchar("logoUrl", { length: 1e3 }),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    chatLogs = pgTable("chatLogs", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      userId: varchar("userId", { length: 64 }),
-      sessionId: varchar("sessionId", { length: 64 }).notNull(),
-      message: text("message").notNull(),
-      response: text("response").notNull(),
-      intent: varchar("intent", { length: 200 }),
-      isLocal: boolean("isLocal").default(true),
-      sourceDocs: text("sourceDocs"),
-      tokens: integer("tokens"),
-      createdAt: timestamp("createdAt").defaultNow()
-    });
-    userPreferences = pgTable("userPreferences", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      userId: varchar("userId", { length: 64 }).notNull(),
-      favoriteCategories: text("favoriteCategories"),
-      wasteDistrict: varchar("wasteDistrict", { length: 200 }),
-      wasteStreet: varchar("wasteStreet", { length: 500 }),
-      notificationSettings: text("notificationSettings"),
-      savedPois: text("savedPois"),
-      createdAt: timestamp("createdAt").defaultNow(),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    contactMessages = pgTable("contactMessages", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      name: varchar("name", { length: 200 }).notNull(),
-      email: varchar("email", { length: 320 }),
-      subject: varchar("subject", { length: 500 }).notNull(),
-      message: text("message").notNull(),
-      status: contactStatusEnum("status").default("neu").notNull(),
-      createdAt: timestamp("createdAt").defaultNow(),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    pushNotifications = pgTable("pushNotifications", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      title: varchar("title", { length: 500 }).notNull(),
-      message: text("message").notNull(),
-      type: notificationTypeEnum("type").default("info").notNull(),
-      priority: notificationPriorityEnum("priority").default("medium").notNull(),
-      isActive: boolean("isActive").default(true).notNull(),
-      expiresAt: timestamp("expiresAt"),
-      createdBy: varchar("createdBy", { length: 64 }),
-      createdAt: timestamp("createdAt").defaultNow(),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    userNotifications = pgTable("userNotifications", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      oneSignalPlayerId: varchar("oneSignalPlayerId", { length: 64 }).notNull(),
-      title: varchar("title", { length: 500 }).notNull(),
-      message: text("message").notNull(),
-      type: notificationTypeEnum("type").default("info").notNull(),
-      isRead: boolean("isRead").default(false).notNull(),
-      receivedAt: timestamp("receivedAt").defaultNow().notNull(),
-      readAt: timestamp("readAt"),
-      data: text("data")
-      // JSON string for additional data
-    });
-    websiteChunks = pgTable("website_chunks", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      url: varchar("url", { length: 2e3 }).notNull(),
-      title: varchar("title", { length: 500 }),
-      content: text("content").notNull(),
-      chunkIndex: integer("chunkIndex").notNull(),
-      embedding: text("embedding").notNull(),
-      // Will store vector as JSON array
-      metadata: text("metadata"),
-      // JSON: {section, lastScraped, etc}
-      createdAt: timestamp("createdAt").defaultNow(),
-      updatedAt: timestamp("updatedAt").defaultNow()
-    });
-    scrapingLog = pgTable("scraping_log", {
-      id: varchar("id", { length: 64 }).primaryKey(),
-      tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
-      url: varchar("url", { length: 2e3 }).notNull(),
-      status: varchar("status", { length: 50 }).notNull(),
-      // success, error, skipped
-      chunksCreated: integer("chunksCreated").default(0),
-      errorMessage: text("errorMessage"),
-      scrapedAt: timestamp("scrapedAt").defaultNow()
-    });
-  }
-});
-
 // server/services/google-places.ts
 var google_places_exports = {};
 __export(google_places_exports, {
@@ -581,10 +258,10 @@ ${openingHours}`,
          LIMIT 5`,
         [tenantId]
       );
-      for (const news3 of newsResult.rows) {
+      for (const news2 of newsResult.rows) {
         results.push({
-          title: news3.title,
-          content: news3.content?.substring(0, 300) || "",
+          title: news2.title,
+          content: news2.content?.substring(0, 300) || "",
           source: "news"
         });
       }
@@ -1405,11 +1082,326 @@ var UNAUTHED_ERR_MSG = "Please login (10001)";
 var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 
 // server/db.ts
-init_schema();
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { nanoid } from "nanoid";
+
+// drizzle/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  alerts: () => alerts,
+  chatLogs: () => chatLogs,
+  clubs: () => clubs,
+  contactMessages: () => contactMessages,
+  contactStatusEnum: () => contactStatusEnum,
+  councilMeetings: () => councilMeetings,
+  departments: () => departments,
+  events: () => events,
+  institutions: () => institutions,
+  issueReports: () => issueReports,
+  issueStatusEnum: () => issueStatusEnum,
+  mayorInfo: () => mayorInfo,
+  news: () => news,
+  notificationPriorityEnum: () => notificationPriorityEnum,
+  notificationTypeEnum: () => notificationTypeEnum,
+  pois: () => pois,
+  priorityEnum: () => priorityEnum,
+  pushNotifications: () => pushNotifications,
+  roleEnum: () => roleEnum,
+  scrapingLog: () => scrapingLog,
+  tenants: () => tenants,
+  userNotifications: () => userNotifications,
+  userPreferences: () => userPreferences,
+  users: () => users,
+  wasteSchedule: () => wasteSchedule,
+  websiteChunks: () => websiteChunks
+});
+import { pgTable, text, timestamp, varchar, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
+var roleEnum = pgEnum("role", ["user", "admin", "tenant_admin"]);
+var issueStatusEnum = pgEnum("issue_status", ["eingegangen", "in_bearbeitung", "erledigt"]);
+var priorityEnum = pgEnum("priority", ["low", "medium", "high", "critical"]);
+var contactStatusEnum = pgEnum("contact_status", ["neu", "in_bearbeitung", "erledigt"]);
+var notificationTypeEnum = pgEnum("notification_type", ["info", "warning", "danger", "event"]);
+var notificationPriorityEnum = pgEnum("notification_priority", ["low", "medium", "high", "urgent"]);
+var tenants = pgTable("tenants", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  slug: varchar("subdomain", { length: 100 }).notNull().unique(),
+  // Branding
+  primaryColor: varchar("primary_color", { length: 20 }).default("#0066CC"),
+  secondaryColor: varchar("secondary_color", { length: 20 }).default("#00A86B"),
+  logoUrl: varchar("logo_url", { length: 1e3 }),
+  faviconUrl: varchar("favicon_url", { length: 1e3 }),
+  heroImageUrl: varchar("hero_image_url", { length: 1e3 }),
+  // Kontakt
+  contactEmail: varchar("contact_email", { length: 320 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  contactAddress: text("address"),
+  website: varchar("website", { length: 1e3 }),
+  description: text("description"),
+  // Location
+  mayor: varchar("mayor", { length: 200 }),
+  population: integer("population"),
+  area: varchar("area", { length: 50 }),
+  postalCode: varchar("postal_code", { length: 20 }),
+  latitude: varchar("latitude", { length: 50 }),
+  longitude: varchar("longitude", { length: 50 }),
+  // Settings
+  timezone: varchar("timezone", { length: 100 }).default("Europe/Berlin"),
+  locale: varchar("locale", { length: 20 }).default("de-DE"),
+  currency: varchar("currency", { length: 10 }).default("EUR"),
+  // JSON fields
+  features: text("features"),
+  openingHours: text("opening_hours"),
+  socialMedia: text("social_media"),
+  // Meta
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+var users = pgTable("users", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).references(() => tenants.id, { onDelete: "cascade" }),
+  name: text("name"),
+  email: varchar("email", { length: 320 }),
+  loginMethod: varchar("loginMethod", { length: 64 }),
+  role: roleEnum("role").default("user").notNull(),
+  oneSignalPlayerId: varchar("oneSignalPlayerId", { length: 64 }),
+  pushEnabled: boolean("pushEnabled").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  lastSignedIn: timestamp("lastSignedIn").defaultNow()
+});
+var news = pgTable("news", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 500 }).notNull(),
+  teaser: text("teaser"),
+  bodyMD: text("bodyMD"),
+  imageUrl: varchar("imageUrl", { length: 1e3 }),
+  category: varchar("category", { length: 100 }),
+  publishedAt: timestamp("publishedAt").notNull(),
+  sourceUrl: varchar("sourceUrl", { length: 1e3 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var events = pgTable("events", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description"),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate"),
+  location: varchar("location", { length: 500 }),
+  latitude: varchar("latitude", { length: 50 }),
+  longitude: varchar("longitude", { length: 50 }),
+  imageUrl: varchar("imageUrl", { length: 1e3 }),
+  ticketLink: varchar("ticketLink", { length: 1e3 }),
+  category: varchar("category", { length: 100 }),
+  cost: varchar("cost", { length: 200 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var departments = pgTable("departments", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 500 }).notNull(),
+  description: text("description"),
+  responsibilities: text("responsibilities"),
+  contactName: varchar("contactName", { length: 200 }),
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 320 }),
+  address: text("address"),
+  openingHours: text("openingHours"),
+  appointmentLink: varchar("appointmentLink", { length: 1e3 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var issueReports = pgTable("issueReports", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  userId: varchar("userId", { length: 64 }),
+  category: varchar("category", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  latitude: varchar("latitude", { length: 50 }),
+  longitude: varchar("longitude", { length: 50 }),
+  address: varchar("address", { length: 500 }),
+  photoUrl: varchar("photoUrl", { length: 1e3 }),
+  status: issueStatusEnum("status").default("eingegangen").notNull(),
+  contactEmail: varchar("contactEmail", { length: 320 }),
+  contactPhone: varchar("contactPhone", { length: 50 }),
+  ticketNumber: varchar("ticketNumber", { length: 50 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow()
+});
+var wasteSchedule = pgTable("wasteSchedule", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  wasteType: varchar("wasteType", { length: 100 }).notNull(),
+  collectionDate: timestamp("collectionDate").notNull(),
+  district: varchar("district", { length: 200 }),
+  street: varchar("street", { length: 500 }),
+  route: varchar("route", { length: 100 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var alerts = pgTable("alerts", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 100 }).notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  message: text("message").notNull(),
+  priority: priorityEnum("priority").default("medium").notNull(),
+  validUntil: timestamp("validUntil"),
+  category: varchar("category", { length: 100 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var pois = pgTable("pois", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 500 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }),
+  latitude: varchar("latitude", { length: 50 }),
+  longitude: varchar("longitude", { length: 50 }),
+  address: varchar("address", { length: 500 }),
+  imageUrl: varchar("imageUrl", { length: 1e3 }),
+  websiteUrl: varchar("websiteUrl", { length: 1e3 }),
+  openingHours: text("openingHours"),
+  pricing: text("pricing"),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var institutions = pgTable("institutions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 500 }).notNull(),
+  type: varchar("type", { length: 100 }).notNull(),
+  description: text("description"),
+  contactName: varchar("contactName", { length: 200 }),
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 320 }),
+  address: text("address"),
+  websiteUrl: varchar("websiteUrl", { length: 1e3 }),
+  registrationInfo: text("registrationInfo"),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var councilMeetings = pgTable("councilMeetings", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 500 }).notNull(),
+  meetingDate: timestamp("meetingDate").notNull(),
+  committee: varchar("committee", { length: 200 }),
+  agendaUrl: varchar("agendaUrl", { length: 1e3 }),
+  minutesUrl: varchar("minutesUrl", { length: 1e3 }),
+  location: varchar("location", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var mayorInfo = pgTable("mayorInfo", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 200 }).notNull(),
+  party: varchar("party", { length: 100 }),
+  position: varchar("position", { length: 200 }),
+  photoUrl: varchar("photoUrl", { length: 1e3 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  bio: text("bio"),
+  calendarUrl: varchar("calendarUrl", { length: 1e3 }),
+  updatedAt: timestamp("updatedAt").defaultNow()
+});
+var clubs = pgTable("clubs", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 500 }).notNull(),
+  category: varchar("category", { length: 100 }),
+  description: text("description"),
+  contactName: varchar("contactName", { length: 200 }),
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 320 }),
+  websiteUrl: varchar("websiteUrl", { length: 1e3 }),
+  logoUrl: varchar("logoUrl", { length: 1e3 }),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var chatLogs = pgTable("chatLogs", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  userId: varchar("userId", { length: 64 }),
+  sessionId: varchar("sessionId", { length: 64 }).notNull(),
+  message: text("message").notNull(),
+  response: text("response").notNull(),
+  intent: varchar("intent", { length: 200 }),
+  isLocal: boolean("isLocal").default(true),
+  sourceDocs: text("sourceDocs"),
+  tokens: integer("tokens"),
+  createdAt: timestamp("createdAt").defaultNow()
+});
+var userPreferences = pgTable("userPreferences", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: varchar("userId", { length: 64 }).notNull(),
+  favoriteCategories: text("favoriteCategories"),
+  wasteDistrict: varchar("wasteDistrict", { length: 200 }),
+  wasteStreet: varchar("wasteStreet", { length: 500 }),
+  notificationSettings: text("notificationSettings"),
+  savedPois: text("savedPois"),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow()
+});
+var contactMessages = pgTable("contactMessages", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 200 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  message: text("message").notNull(),
+  status: contactStatusEnum("status").default("neu").notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow()
+});
+var pushNotifications = pgTable("pushNotifications", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 500 }).notNull(),
+  message: text("message").notNull(),
+  type: notificationTypeEnum("type").default("info").notNull(),
+  priority: notificationPriorityEnum("priority").default("medium").notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  expiresAt: timestamp("expiresAt"),
+  createdBy: varchar("createdBy", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow()
+});
+var userNotifications = pgTable("userNotifications", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  oneSignalPlayerId: varchar("oneSignalPlayerId", { length: 64 }).notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  message: text("message").notNull(),
+  type: notificationTypeEnum("type").default("info").notNull(),
+  isRead: boolean("isRead").default(false).notNull(),
+  receivedAt: timestamp("receivedAt").defaultNow().notNull(),
+  readAt: timestamp("readAt"),
+  data: text("data")
+  // JSON string for additional data
+});
+var websiteChunks = pgTable("website_chunks", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  url: varchar("url", { length: 2e3 }).notNull(),
+  title: varchar("title", { length: 500 }),
+  content: text("content").notNull(),
+  chunkIndex: integer("chunkIndex").notNull(),
+  embedding: text("embedding").notNull(),
+  // Will store vector as JSON array
+  metadata: text("metadata"),
+  // JSON: {section, lastScraped, etc}
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow()
+});
+var scrapingLog = pgTable("scraping_log", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  url: varchar("url", { length: 2e3 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull(),
+  // success, error, skipped
+  chunksCreated: integer("chunksCreated").default(0),
+  errorMessage: text("errorMessage"),
+  scrapedAt: timestamp("scrapedAt").defaultNow()
+});
 
 // server/_core/env.ts
 var ENV = {
@@ -1429,10 +1421,10 @@ async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       const client = postgres(process.env.DATABASE_URL);
-      const schema = await Promise.resolve().then(() => (init_schema(), schema_exports));
-      _db = drizzle(client, { schema });
+      _db = drizzle(client, { schema: schema_exports });
+      console.log("[Database] Connected successfully");
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to connect:", error);
       _db = null;
     }
   }
@@ -2629,9 +2621,9 @@ async function getWeatherForecast() {
     const { time, weather_code, temperature_2m_max, temperature_2m_min } = data.daily;
     const list = time.map((date, index) => {
       const dateObj = new Date(date);
-      const timestamp3 = Math.floor(dateObj.getTime() / 1e3);
+      const timestamp2 = Math.floor(dateObj.getTime() / 1e3);
       return {
-        dt: timestamp3,
+        dt: timestamp2,
         dt_txt: `${date} 12:00:00`,
         // Mittags-Zeitpunkt für Kompatibilität
         main: {
@@ -2895,7 +2887,6 @@ function formatPlacesForPrompt(placesData) {
 
 // server/routers/tenant.ts
 import { z as z2 } from "zod";
-init_schema();
 import { eq as eq2 } from "drizzle-orm";
 var tenantRouter = router({
   /**
@@ -2929,7 +2920,6 @@ var tenantRouter = router({
 
 // server/routers/news-multi-tenant.ts
 import { z as z3 } from "zod";
-init_schema();
 import { eq as eq3, desc as desc2, and as and2 } from "drizzle-orm";
 import { nanoid as nanoid2 } from "nanoid";
 var newsRouter = router({
@@ -3055,7 +3045,6 @@ var newsRouter = router({
 
 // server/routers/events-multi-tenant.ts
 import { z as z4 } from "zod";
-init_schema();
 import { eq as eq4, desc as desc3, and as and3, gte as gte2 } from "drizzle-orm";
 import { nanoid as nanoid3 } from "nanoid";
 var eventsRouter = router({
@@ -3189,7 +3178,6 @@ var eventsRouter = router({
 
 // server/routers/departments-multi-tenant.ts
 import { z as z5 } from "zod";
-init_schema();
 import { eq as eq5, and as and4 } from "drizzle-orm";
 import { nanoid as nanoid4 } from "nanoid";
 var departmentsRouter = router({
@@ -3306,7 +3294,6 @@ var departmentsRouter = router({
 
 // server/routers/issueReports-multi-tenant.ts
 import { z as z6 } from "zod";
-init_schema();
 import { eq as eq6, desc as desc4, and as and5 } from "drizzle-orm";
 import { nanoid as nanoid5 } from "nanoid";
 var issueReportsRouter = router({
@@ -3433,7 +3420,6 @@ var issueReportsRouter = router({
 
 // server/routers/all-remaining-routers.ts
 import { z as z7 } from "zod";
-init_schema();
 import { eq as eq7, desc as desc5, and as and6, gte as gte3 } from "drizzle-orm";
 import { nanoid as nanoid6 } from "nanoid";
 var wasteScheduleRouter = router({
@@ -3837,7 +3823,7 @@ var pool2 = new Pool2({
   user: "buergerapp_user",
   password: "buergerapp_dev_2025"
 });
-var PERPLEXITY_API_KEY = "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";
+var PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || "";
 var PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
 var sessions = /* @__PURE__ */ new Map();
 setInterval(() => {
@@ -5014,283 +5000,10 @@ function serveStatic(app) {
   });
 }
 
-// drizzle/schema-multi-tenant.ts
-import { pgTable as pgTable2, text as text2, timestamp as timestamp2, varchar as varchar2, integer as integer2, boolean as boolean2, pgEnum as pgEnum2 } from "drizzle-orm/pg-core";
-var roleEnum2 = pgEnum2("role", ["user", "admin", "tenant_admin"]);
-var issueStatusEnum2 = pgEnum2("issue_status", ["eingegangen", "in_bearbeitung", "erledigt"]);
-var priorityEnum2 = pgEnum2("priority", ["low", "medium", "high", "critical"]);
-var contactStatusEnum2 = pgEnum2("contact_status", ["neu", "in_bearbeitung", "erledigt"]);
-var notificationTypeEnum2 = pgEnum2("notification_type", ["info", "warning", "danger", "event"]);
-var notificationPriorityEnum2 = pgEnum2("notification_priority", ["low", "medium", "high", "urgent"]);
-var tenants2 = pgTable2("tenants", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  name: varchar2("name", { length: 200 }).notNull(),
-  // z.B. "Schieder-Schwalenberg"
-  slug: varchar2("slug", { length: 100 }).notNull().unique(),
-  // z.B. "schieder"
-  domain: varchar2("domain", { length: 255 }),
-  // z.B. "schieder.buergerapp.eu"
-  // Branding
-  primaryColor: varchar2("primaryColor", { length: 20 }).default("#0066CC"),
-  // Hauptfarbe
-  secondaryColor: varchar2("secondaryColor", { length: 20 }).default("#00A86B"),
-  // Akzentfarbe
-  logoUrl: varchar2("logoUrl", { length: 1e3 }),
-  heroImageUrl: varchar2("heroImageUrl", { length: 1e3 }),
-  // Kontakt
-  contactEmail: varchar2("contactEmail", { length: 320 }),
-  contactPhone: varchar2("contactPhone", { length: 50 }),
-  contactAddress: text2("contactAddress"),
-  // Wetter
-  weatherLat: varchar2("weatherLat", { length: 50 }),
-  // Breitengrad
-  weatherLon: varchar2("weatherLon", { length: 50 }),
-  // Längengrad
-  weatherCity: varchar2("weatherCity", { length: 200 }),
-  // Stadt-Name für Wetter
-  // Chatbot
-  chatbotName: varchar2("chatbotName", { length: 100 }).default("Chatbot"),
-  chatbotSystemPrompt: text2("chatbotSystemPrompt"),
-  // Custom System-Prompt
-  // Features (optional - für spätere Erweiterung)
-  enabledFeatures: text2("enabledFeatures"),
-  // JSON: ["news", "events", "waste", ...]
-  // Bürgermeister
-  mayorName: varchar2("mayor_name", { length: 200 }),
-  mayorEmail: varchar2("mayor_email", { length: 320 }),
-  mayorPhone: varchar2("mayor_phone", { length: 50 }),
-  mayorAddress: text2("mayor_address"),
-  mayorOfficeHours: text2("mayor_office_hours"),
-  // Meta
-  isActive: boolean2("isActive").default(true).notNull(),
-  createdAt: timestamp2("createdAt").defaultNow(),
-  updatedAt: timestamp2("updatedAt").defaultNow()
-});
-var users2 = pgTable2("users", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).references(() => tenants2.id, { onDelete: "cascade" }),
-  name: text2("name"),
-  email: varchar2("email", { length: 320 }),
-  loginMethod: varchar2("loginMethod", { length: 64 }),
-  role: roleEnum2("role").default("user").notNull(),
-  oneSignalPlayerId: varchar2("oneSignalPlayerId", { length: 64 }),
-  pushEnabled: boolean2("pushEnabled").default(true).notNull(),
-  createdAt: timestamp2("createdAt").defaultNow(),
-  lastSignedIn: timestamp2("lastSignedIn").defaultNow()
-});
-var news2 = pgTable2("news", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  title: varchar2("title", { length: 500 }).notNull(),
-  teaser: text2("teaser"),
-  bodyMD: text2("bodyMD"),
-  imageUrl: varchar2("imageUrl", { length: 1e3 }),
-  category: varchar2("category", { length: 100 }),
-  publishedAt: timestamp2("publishedAt").notNull(),
-  sourceUrl: varchar2("sourceUrl", { length: 1e3 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var events2 = pgTable2("events", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  title: varchar2("title", { length: 500 }).notNull(),
-  description: text2("description"),
-  startDate: timestamp2("startDate").notNull(),
-  endDate: timestamp2("endDate"),
-  location: varchar2("location", { length: 500 }),
-  latitude: varchar2("latitude", { length: 50 }),
-  longitude: varchar2("longitude", { length: 50 }),
-  imageUrl: varchar2("imageUrl", { length: 1e3 }),
-  ticketLink: varchar2("ticketLink", { length: 1e3 }),
-  category: varchar2("category", { length: 100 }),
-  cost: varchar2("cost", { length: 200 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var departments2 = pgTable2("departments", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  name: varchar2("name", { length: 500 }).notNull(),
-  description: text2("description"),
-  responsibilities: text2("responsibilities"),
-  contactName: varchar2("contactName", { length: 200 }),
-  phone: varchar2("phone", { length: 50 }),
-  email: varchar2("email", { length: 320 }),
-  address: text2("address"),
-  openingHours: text2("openingHours"),
-  appointmentLink: varchar2("appointmentLink", { length: 1e3 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var issueReports2 = pgTable2("issueReports", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  userId: varchar2("userId", { length: 64 }),
-  category: varchar2("category", { length: 100 }).notNull(),
-  description: text2("description").notNull(),
-  latitude: varchar2("latitude", { length: 50 }),
-  longitude: varchar2("longitude", { length: 50 }),
-  address: varchar2("address", { length: 500 }),
-  photoUrl: varchar2("photoUrl", { length: 1e3 }),
-  status: issueStatusEnum2("status").default("eingegangen").notNull(),
-  contactEmail: varchar2("contactEmail", { length: 320 }),
-  contactPhone: varchar2("contactPhone", { length: 50 }),
-  ticketNumber: varchar2("ticketNumber", { length: 50 }).notNull(),
-  createdAt: timestamp2("createdAt").defaultNow(),
-  updatedAt: timestamp2("updatedAt").defaultNow()
-});
-var wasteSchedule2 = pgTable2("wasteSchedule", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  wasteType: varchar2("wasteType", { length: 100 }).notNull(),
-  collectionDate: timestamp2("collectionDate").notNull(),
-  district: varchar2("district", { length: 200 }),
-  street: varchar2("street", { length: 500 }),
-  route: varchar2("route", { length: 100 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var alerts2 = pgTable2("alerts", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  type: varchar2("type", { length: 100 }).notNull(),
-  title: varchar2("title", { length: 500 }).notNull(),
-  message: text2("message").notNull(),
-  priority: priorityEnum2("priority").default("medium").notNull(),
-  validUntil: timestamp2("validUntil"),
-  category: varchar2("category", { length: 100 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var pois2 = pgTable2("pois", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  name: varchar2("name", { length: 500 }).notNull(),
-  description: text2("description"),
-  category: varchar2("category", { length: 100 }),
-  latitude: varchar2("latitude", { length: 50 }),
-  longitude: varchar2("longitude", { length: 50 }),
-  address: varchar2("address", { length: 500 }),
-  imageUrl: varchar2("imageUrl", { length: 1e3 }),
-  websiteUrl: varchar2("websiteUrl", { length: 1e3 }),
-  openingHours: text2("openingHours"),
-  pricing: text2("pricing"),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var institutions2 = pgTable2("institutions", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  name: varchar2("name", { length: 500 }).notNull(),
-  type: varchar2("type", { length: 100 }).notNull(),
-  description: text2("description"),
-  contactName: varchar2("contactName", { length: 200 }),
-  phone: varchar2("phone", { length: 50 }),
-  email: varchar2("email", { length: 320 }),
-  address: text2("address"),
-  websiteUrl: varchar2("websiteUrl", { length: 1e3 }),
-  registrationInfo: text2("registrationInfo"),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var councilMeetings2 = pgTable2("councilMeetings", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  title: varchar2("title", { length: 500 }).notNull(),
-  meetingDate: timestamp2("meetingDate").notNull(),
-  committee: varchar2("committee", { length: 200 }),
-  agendaUrl: varchar2("agendaUrl", { length: 1e3 }),
-  minutesUrl: varchar2("minutesUrl", { length: 1e3 }),
-  location: varchar2("location", { length: 500 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var mayorInfo2 = pgTable2("mayorInfo", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  name: varchar2("name", { length: 200 }).notNull(),
-  party: varchar2("party", { length: 100 }),
-  position: varchar2("position", { length: 200 }),
-  photoUrl: varchar2("photoUrl", { length: 1e3 }),
-  email: varchar2("email", { length: 320 }),
-  phone: varchar2("phone", { length: 50 }),
-  bio: text2("bio"),
-  calendarUrl: varchar2("calendarUrl", { length: 1e3 }),
-  updatedAt: timestamp2("updatedAt").defaultNow()
-});
-var clubs2 = pgTable2("clubs", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  name: varchar2("name", { length: 500 }).notNull(),
-  category: varchar2("category", { length: 100 }),
-  description: text2("description"),
-  contactName: varchar2("contactName", { length: 200 }),
-  phone: varchar2("phone", { length: 50 }),
-  email: varchar2("email", { length: 320 }),
-  websiteUrl: varchar2("websiteUrl", { length: 1e3 }),
-  logoUrl: varchar2("logoUrl", { length: 1e3 }),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var chatLogs2 = pgTable2("chatLogs", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  userId: varchar2("userId", { length: 64 }),
-  sessionId: varchar2("sessionId", { length: 64 }).notNull(),
-  message: text2("message").notNull(),
-  response: text2("response").notNull(),
-  intent: varchar2("intent", { length: 200 }),
-  isLocal: boolean2("isLocal").default(true),
-  sourceDocs: text2("sourceDocs"),
-  tokens: integer2("tokens"),
-  createdAt: timestamp2("createdAt").defaultNow()
-});
-var userPreferences2 = pgTable2("userPreferences", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  userId: varchar2("userId", { length: 64 }).notNull(),
-  favoriteCategories: text2("favoriteCategories"),
-  wasteDistrict: varchar2("wasteDistrict", { length: 200 }),
-  wasteStreet: varchar2("wasteStreet", { length: 500 }),
-  notificationSettings: text2("notificationSettings"),
-  savedPois: text2("savedPois"),
-  createdAt: timestamp2("createdAt").defaultNow(),
-  updatedAt: timestamp2("updatedAt").defaultNow()
-});
-var contactMessages2 = pgTable2("contactMessages", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  name: varchar2("name", { length: 200 }).notNull(),
-  email: varchar2("email", { length: 320 }),
-  subject: varchar2("subject", { length: 500 }).notNull(),
-  message: text2("message").notNull(),
-  status: contactStatusEnum2("status").default("neu").notNull(),
-  createdAt: timestamp2("createdAt").defaultNow(),
-  updatedAt: timestamp2("updatedAt").defaultNow()
-});
-var pushNotifications2 = pgTable2("pushNotifications", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  title: varchar2("title", { length: 500 }).notNull(),
-  message: text2("message").notNull(),
-  type: notificationTypeEnum2("type").default("info").notNull(),
-  priority: notificationPriorityEnum2("priority").default("medium").notNull(),
-  isActive: boolean2("isActive").default(true).notNull(),
-  expiresAt: timestamp2("expiresAt"),
-  createdBy: varchar2("createdBy", { length: 64 }),
-  createdAt: timestamp2("createdAt").defaultNow(),
-  updatedAt: timestamp2("updatedAt").defaultNow()
-});
-var userNotifications2 = pgTable2("userNotifications", {
-  id: varchar2("id", { length: 64 }).primaryKey(),
-  tenantId: varchar2("tenantId", { length: 64 }).notNull().references(() => tenants2.id, { onDelete: "cascade" }),
-  oneSignalPlayerId: varchar2("oneSignalPlayerId", { length: 64 }).notNull(),
-  title: varchar2("title", { length: 500 }).notNull(),
-  message: text2("message").notNull(),
-  type: notificationTypeEnum2("type").default("info").notNull(),
-  isRead: boolean2("isRead").default(false).notNull(),
-  receivedAt: timestamp2("receivedAt").defaultNow().notNull(),
-  readAt: timestamp2("readAt"),
-  data: text2("data")
-  // JSON string for additional data
-});
-
 // server/tenant-middleware.ts
-import { eq as eq8 } from "drizzle-orm";
 function extractTenantSlug(req) {
   const host = req.get("host") || "";
-  const skipSubdomainHosts = ["localhost", "manusvm.computer", "127.0.0.1"];
+  const skipSubdomainHosts = ["localhost", "manusvm.computer", "127.0.0.1", "onrender.com"];
   const shouldSkipSubdomain = skipSubdomainHosts.some((skip) => host.includes(skip));
   if (!shouldSkipSubdomain) {
     const subdomain = host.split(".")[0];
@@ -5309,50 +5022,47 @@ function extractTenantSlug(req) {
     console.log("[Tenant] Extracted from header:", headerTenant);
     return headerTenant;
   }
-  console.log("[Tenant] Using default: schieder");
-  return "schieder";
+  console.log("[Tenant] Using default: hornbadmeinberg");
+  return "hornbadmeinberg";
 }
 async function loadTenant(slug) {
   console.log("[Tenant] Loading tenant from DB with slug:", slug);
   try {
-    const db = await getDb();
-    if (!db) {
-      console.error("[Tenant] Database not available");
-      return null;
-    }
-    const result = await db.select().from(tenants2).where(eq8(tenants2.slug, slug)).limit(1);
-    if (result.length === 0) {
+    const response = await fetch("http://localhost:3000/api/debug/tenants");
+    const data = await response.json();
+    console.log("[Tenant] Debug endpoint returned", data.count, "tenants");
+    const tenant = data.tenants?.find((t2) => t2.subdomain === slug);
+    if (!tenant) {
       console.error("[Tenant] No tenant found with slug:", slug);
       return null;
     }
-    const tenant = result[0];
     console.log("[Tenant] Loaded tenant:", tenant.name);
     return {
       id: tenant.id,
       name: tenant.name,
-      slug: tenant.slug,
-      primaryColor: tenant.primaryColor || "#0066CC",
-      secondaryColor: tenant.secondaryColor || "#00A86B",
-      logoUrl: tenant.logoUrl,
-      heroImageUrl: tenant.heroImageUrl,
-      contactEmail: tenant.contactEmail,
-      contactPhone: tenant.contactPhone,
-      contactAddress: tenant.contactAddress,
-      weatherLat: tenant.weatherLat,
-      weatherLon: tenant.weatherLon,
-      weatherCity: tenant.weatherCity,
-      chatbotName: tenant.chatbotName || "Chatbot",
-      chatbotSystemPrompt: tenant.chatbotSystemPrompt,
-      enabledFeatures: tenant.enabledFeatures,
-      isActive: tenant.isActive,
-      mayorName: tenant.mayorName,
-      mayorEmail: tenant.mayorEmail,
-      mayorPhone: tenant.mayorPhone,
-      mayorAddress: tenant.mayorAddress,
-      mayorOfficeHours: tenant.mayorOfficeHours
+      slug: tenant.subdomain,
+      primaryColor: tenant.primary_color || "#0066CC",
+      secondaryColor: tenant.secondary_color || "#00A86B",
+      logoUrl: tenant.logo_url,
+      heroImageUrl: tenant.hero_image_url,
+      contactEmail: tenant.contact_email,
+      contactPhone: tenant.contact_phone,
+      contactAddress: tenant.address,
+      weatherLat: tenant.latitude,
+      weatherLon: tenant.longitude,
+      weatherCity: tenant.subdomain,
+      chatbotName: "Chatbot",
+      chatbotSystemPrompt: null,
+      enabledFeatures: tenant.features,
+      isActive: true,
+      mayorName: tenant.mayor,
+      mayorEmail: null,
+      mayorPhone: null,
+      mayorAddress: null,
+      mayorOfficeHours: null
     };
   } catch (error) {
-    console.error("Error loading tenant:", error);
+    console.error("[Tenant] Error loading tenant:", error);
     return null;
   }
 }
@@ -5365,17 +5075,106 @@ async function tenantMiddleware(req, res, next) {
   if (!tenant) {
     return res.status(404).json({ error: "Tenant not found" });
   }
-  if (!tenant.isActive) {
-    return res.status(403).json({ error: "Tenant is not active" });
-  }
   req.tenant = tenant;
   next();
 }
 
 // server/routes/news.ts
 import { Router } from "express";
-import { Pool as Pool4 } from "pg";
+import { sql as sql2 } from "drizzle-orm";
 var router2 = Router();
+router2.get("/", async (req, res) => {
+  try {
+    const tenantSlug = req.query.tenant;
+    if (!tenantSlug) {
+      return res.status(400).json({ error: "Tenant parameter is required" });
+    }
+    const db = await getDb();
+    if (!db) {
+      return res.status(500).json({ error: "Database not available" });
+    }
+    const result = await db.execute(sql2`
+      SELECT id, title, teaser as description, "publishedAt" as published_date, 
+             "sourceUrl" as source_url, category, "createdAt" as scraped_at, "imageUrl" as image_url
+      FROM news
+      WHERE "tenantId" = ${tenantSlug}
+      ORDER BY "publishedAt" DESC
+      LIMIT 20
+    `);
+    res.json({
+      articles: result.rows
+    });
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    res.status(500).json({ error: "Failed to fetch news articles" });
+  }
+});
+var news_default = router2;
+
+// server/routes/events.ts
+import { Router as Router2 } from "express";
+import { sql as sql3 } from "drizzle-orm";
+var router3 = Router2();
+router3.get("/", async (req, res) => {
+  try {
+    const tenantSlug = req.query.tenant;
+    if (!tenantSlug) {
+      return res.status(400).json({ error: "Tenant parameter is required" });
+    }
+    const db = await getDb();
+    if (!db) {
+      return res.status(500).json({ error: "Database not available" });
+    }
+    const result = await db.execute(sql3`
+      SELECT id, title, description, "startDate" as start_date, "endDate" as end_date, 
+             location, "imageUrl" as image_url, "ticketLink" as ticket_link, category, "createdAt" as scraped_at
+      FROM events
+      WHERE "tenantId" = ${tenantSlug}
+      ORDER BY "startDate" ASC
+      LIMIT 50
+    `);
+    res.json({
+      events: result.rows
+    });
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
+});
+var events_default = router3;
+
+// server/routes/departments.ts
+import { Router as Router3 } from "express";
+import { sql as sql4 } from "drizzle-orm";
+var router4 = Router3();
+router4.get("/", async (req, res) => {
+  try {
+    const tenantSlug = req.query.tenant;
+    if (!tenantSlug) {
+      return res.status(400).json({ error: "Tenant parameter is required" });
+    }
+    const db = await getDb();
+    if (!db) {
+      return res.status(500).json({ error: "Database not available" });
+    }
+    const result = await db.execute(sql4`
+      SELECT id, name, description, phone, email, "openingHours" as opening_hours
+      FROM departments
+      WHERE "tenantId" = ${tenantSlug}
+      ORDER BY name ASC
+    `);
+    res.json({ departments: result.rows });
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    res.status(500).json({ error: "Failed to fetch departments" });
+  }
+});
+var departments_default = router4;
+
+// server/routes/attractions.ts
+import { Router as Router4 } from "express";
+import { Pool as Pool4 } from "pg";
+var router5 = Router4();
 var pool4 = new Pool4({
   host: process.env.DIRECTUS_DB_HOST || "localhost",
   port: parseInt(process.env.DIRECTUS_DB_PORT || "5432"),
@@ -5383,7 +5182,7 @@ var pool4 = new Pool4({
   user: process.env.DIRECTUS_DB_USER || "buergerapp_user",
   password: process.env.DIRECTUS_DB_PASSWORD || "buergerapp_dev_2025"
 });
-router2.get("/", async (req, res) => {
+router5.get("/", async (req, res) => {
   try {
     const tenantSlug = req.query.tenant;
     if (!tenantSlug) {
@@ -5397,150 +5196,7 @@ router2.get("/", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const articlesResult = await pool4.query(
-      `SELECT id, title, teaser as description, "publishedAt" as published_date, "sourceUrl" as source_url, category, "createdAt" as scraped_at, "imageUrl" as image_url
-       FROM news
-       WHERE "tenantId" = $1
-       ORDER BY "publishedAt" DESC
-       LIMIT 20`,
-      [tenantId]
-    );
-    res.json({
-      articles: articlesResult.rows
-    });
-  } catch (error) {
-    console.error("Error fetching news:", error);
-    res.status(500).json({ error: "Failed to fetch news articles" });
-  }
-});
-var news_default = router2;
-
-// server/routes/events.ts
-import { Router as Router2 } from "express";
-import { Pool as Pool5 } from "pg";
-var router3 = Router2();
-var pool5 = new Pool5({
-  host: process.env.DIRECTUS_DB_HOST || "localhost",
-  port: parseInt(process.env.DIRECTUS_DB_PORT || "5432"),
-  database: process.env.DIRECTUS_DB_NAME || "buergerapp",
-  user: process.env.DIRECTUS_DB_USER || "buergerapp_user",
-  password: process.env.DIRECTUS_DB_PASSWORD || "buergerapp_dev_2025"
-});
-router3.get("/", async (req, res) => {
-  try {
-    const tenantSlug = req.query.tenant;
-    if (!tenantSlug) {
-      return res.status(400).json({ error: "Tenant parameter is required" });
-    }
-    const tenantResult = await pool5.query(
-      "SELECT id FROM tenants WHERE slug = $1 LIMIT 1",
-      [tenantSlug]
-    );
-    if (tenantResult.rows.length === 0) {
-      return res.status(404).json({ error: "Tenant not found" });
-    }
-    const tenantId = tenantResult.rows[0].id;
-    const eventsResult = await pool5.query(
-      `SELECT id, title, description, start_date, end_date, location, image_url, source_url, category, scraped_at
-       FROM events
-       WHERE tenant_id = $1
-       ORDER BY start_date ASC
-       LIMIT 50`,
-      [tenantId]
-    );
-    res.json({
-      events: eventsResult.rows
-    });
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    res.status(500).json({ error: "Failed to fetch events" });
-  }
-});
-var events_default = router3;
-
-// server/routes/departments.ts
-import { Router as Router3 } from "express";
-import { Pool as Pool6 } from "pg";
-var router4 = Router3();
-var pool6 = new Pool6({
-  host: process.env.DIRECTUS_DB_HOST || "localhost",
-  port: parseInt(process.env.DIRECTUS_DB_PORT || "5432"),
-  database: process.env.DIRECTUS_DB_NAME || "buergerapp",
-  user: process.env.DIRECTUS_DB_USER || "buergerapp_user",
-  password: process.env.DIRECTUS_DB_PASSWORD || "buergerapp_dev_2025"
-});
-router4.get("/", async (req, res) => {
-  try {
-    const tenantSlug = req.query.tenant;
-    if (!tenantSlug) {
-      return res.status(400).json({ error: "Tenant parameter is required" });
-    }
-    const tenantResult = await pool6.query(
-      "SELECT id FROM tenants WHERE slug = $1 LIMIT 1",
-      [tenantSlug]
-    );
-    if (tenantResult.rows.length === 0) {
-      return res.status(404).json({ error: "Tenant not found" });
-    }
-    const tenantId = tenantResult.rows[0].id;
-    const departmentsResult = await pool6.query(
-      `SELECT id, name, icon, display_order
-       FROM departments
-       WHERE tenant_id = $1
-       ORDER BY display_order ASC, name ASC`,
-      [tenantId]
-    );
-    const departments3 = await Promise.all(
-      departmentsResult.rows.map(async (dept) => {
-        const employeesResult = await pool6.query(
-          `SELECT id, name, title, phone, email
-           FROM staff
-           WHERE tenant_id = $1 AND department_id = $2
-           ORDER BY name ASC`,
-          [tenantId, dept.id]
-        );
-        return {
-          ...dept,
-          employees: employeesResult.rows
-        };
-      })
-    );
-    res.json({
-      departments: departments3
-    });
-  } catch (error) {
-    console.error("Error fetching departments:", error);
-    res.status(500).json({ error: "Failed to fetch departments" });
-  }
-});
-var departments_default = router4;
-
-// server/routes/attractions.ts
-import { Router as Router4 } from "express";
-import { Pool as Pool7 } from "pg";
-var router5 = Router4();
-var pool7 = new Pool7({
-  host: process.env.DIRECTUS_DB_HOST || "localhost",
-  port: parseInt(process.env.DIRECTUS_DB_PORT || "5432"),
-  database: process.env.DIRECTUS_DB_NAME || "buergerapp",
-  user: process.env.DIRECTUS_DB_USER || "buergerapp_user",
-  password: process.env.DIRECTUS_DB_PASSWORD || "buergerapp_dev_2025"
-});
-router5.get("/", async (req, res) => {
-  try {
-    const tenantSlug = req.query.tenant;
-    if (!tenantSlug) {
-      return res.status(400).json({ error: "Tenant parameter is required" });
-    }
-    const tenantResult = await pool7.query(
-      "SELECT id FROM tenants WHERE slug = $1 LIMIT 1",
-      [tenantSlug]
-    );
-    if (tenantResult.rows.length === 0) {
-      return res.status(404).json({ error: "Tenant not found" });
-    }
-    const tenantId = tenantResult.rows[0].id;
-    const attractionsResult = await pool7.query(
+    const attractionsResult = await pool4.query(
       `SELECT id, name, description, category, main_category, image_url, address, more_info_url, display_order
        FROM attractions
        WHERE tenant_id = $1
@@ -5570,9 +5226,9 @@ var attractions_default = router5;
 // server/routes/waste.ts
 import { Router as Router5 } from "express";
 import pkg from "pg";
-var { Pool: Pool8 } = pkg;
+var { Pool: Pool5 } = pkg;
 var router6 = Router5();
-var pool8 = new Pool8({
+var pool5 = new Pool5({
   connectionString: process.env.DATABASE_URL || "postgresql://buergerapp_user:buergerapp_dev_2025@localhost:5432/buergerapp"
 });
 router6.get("/areas", async (req, res) => {
@@ -5581,7 +5237,7 @@ router6.get("/areas", async (req, res) => {
     if (!tenant) {
       return res.status(400).json({ error: "Tenant parameter required" });
     }
-    const tenantResult = await pool8.query(
+    const tenantResult = await pool5.query(
       `SELECT id FROM tenants WHERE slug = $1 LIMIT 1`,
       [tenant]
     );
@@ -5589,7 +5245,7 @@ router6.get("/areas", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const areasResult = await pool8.query(
+    const areasResult = await pool5.query(
       `SELECT id, name FROM waste_areas WHERE tenant_id = $1 ORDER BY name`,
       [tenantId]
     );
@@ -5605,7 +5261,7 @@ router6.get("/schedule", async (req, res) => {
     if (!tenant || !area) {
       return res.status(400).json({ error: "Tenant and area parameters required" });
     }
-    const tenantResult = await pool8.query(
+    const tenantResult = await pool5.query(
       `SELECT id FROM tenants WHERE slug = $1 LIMIT 1`,
       [tenant]
     );
@@ -5613,7 +5269,7 @@ router6.get("/schedule", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const areaResult = await pool8.query(
+    const areaResult = await pool5.query(
       `SELECT id FROM waste_areas WHERE tenant_id = $1 AND name = $2 LIMIT 1`,
       [tenantId, area]
     );
@@ -5642,7 +5298,7 @@ router6.get("/schedule", async (req, res) => {
       query += ` AND wc.collection_date <= $${params.length}`;
     }
     query += ` ORDER BY wc.collection_date, wt.name`;
-    const scheduleResult = await pool8.query(query, params);
+    const scheduleResult = await pool5.query(query, params);
     const groupedByDate = {};
     for (const row of scheduleResult.rows) {
       const date = row.collection_date.toISOString().split("T")[0];
@@ -5668,7 +5324,7 @@ router6.get("/next", async (req, res) => {
     if (!tenant || !area) {
       return res.status(400).json({ error: "Tenant and area parameters required" });
     }
-    const tenantResult = await pool8.query(
+    const tenantResult = await pool5.query(
       `SELECT id FROM tenants WHERE slug = $1 LIMIT 1`,
       [tenant]
     );
@@ -5676,7 +5332,7 @@ router6.get("/next", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const areaResult = await pool8.query(
+    const areaResult = await pool5.query(
       `SELECT id FROM waste_areas WHERE tenant_id = $1 AND name = $2 LIMIT 1`,
       [tenantId, area]
     );
@@ -5697,7 +5353,7 @@ router6.get("/next", async (req, res) => {
     const endOfNextWeek = new Date(startOfNextWeek);
     endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
     endOfNextWeek.setHours(23, 59, 59, 999);
-    const thisWeekResult = await pool8.query(
+    const thisWeekResult = await pool5.query(
       `SELECT 
         wc.collection_date,
         wt.name as waste_type,
@@ -5713,7 +5369,7 @@ router6.get("/next", async (req, res) => {
       ORDER BY wc.collection_date, wt.name`,
       [tenantId, areaId, startOfThisWeek.toISOString().split("T")[0], endOfThisWeek.toISOString().split("T")[0]]
     );
-    const nextWeekResult = await pool8.query(
+    const nextWeekResult = await pool5.query(
       `SELECT 
         wc.collection_date,
         wt.name as waste_type,
@@ -5760,7 +5416,7 @@ router6.post("/preferences", async (req, res) => {
     if (!tenant || !userId || !areaName) {
       return res.status(400).json({ error: "Tenant, userId, and areaName required" });
     }
-    const tenantResult = await pool8.query(
+    const tenantResult = await pool5.query(
       `SELECT id FROM tenants WHERE slug = $1 LIMIT 1`,
       [tenant]
     );
@@ -5768,7 +5424,7 @@ router6.post("/preferences", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const areaResult = await pool8.query(
+    const areaResult = await pool5.query(
       `SELECT id FROM waste_areas WHERE tenant_id = $1 AND name = $2 LIMIT 1`,
       [tenantId, areaName]
     );
@@ -5776,7 +5432,7 @@ router6.post("/preferences", async (req, res) => {
       return res.status(404).json({ error: "Area not found" });
     }
     const areaId = areaResult.rows[0].id;
-    const result = await pool8.query(
+    const result = await pool5.query(
       `INSERT INTO user_waste_preferences (tenant_id, user_id, area_id, notification_enabled, notification_time, updated_at)
        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
        ON CONFLICT (tenant_id, user_id)
@@ -5800,7 +5456,7 @@ router6.get("/preferences", async (req, res) => {
     if (!tenant || !userId) {
       return res.status(400).json({ error: "Tenant and userId parameters required" });
     }
-    const tenantResult = await pool8.query(
+    const tenantResult = await pool5.query(
       `SELECT id FROM tenants WHERE slug = $1 LIMIT 1`,
       [tenant]
     );
@@ -5808,7 +5464,7 @@ router6.get("/preferences", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const result = await pool8.query(
+    const result = await pool5.query(
       `SELECT 
         uwp.*,
         wa.name as area_name
@@ -5832,9 +5488,9 @@ var waste_default = router6;
 // server/routes/clubs.ts
 import { Router as Router6 } from "express";
 import pg3 from "pg";
-var { Pool: Pool9 } = pg3;
+var { Pool: Pool6 } = pg3;
 var router7 = Router6();
-var pool9 = new Pool9({
+var pool6 = new Pool6({
   host: "127.0.0.1",
   port: 5432,
   database: "buergerapp",
@@ -5847,7 +5503,7 @@ router7.get("/", async (req, res) => {
     return res.status(400).json({ error: "Tenant parameter is required" });
   }
   try {
-    const tenantResult = await pool9.query(
+    const tenantResult = await pool6.query(
       "SELECT id FROM tenants WHERE slug = $1",
       [tenant]
     );
@@ -5855,7 +5511,7 @@ router7.get("/", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const result = await pool9.query(
+    const result = await pool6.query(
       `SELECT 
         cc.id as category_id,
         cc.name as category_name,
@@ -5892,9 +5548,9 @@ var clubs_default = router7;
 // server/routes/education.ts
 import { Router as Router7 } from "express";
 import pg4 from "pg";
-var { Pool: Pool10 } = pg4;
+var { Pool: Pool7 } = pg4;
 var router8 = Router7();
-var pool10 = new Pool10({
+var pool7 = new Pool7({
   host: "127.0.0.1",
   port: 5432,
   database: "buergerapp",
@@ -5907,7 +5563,7 @@ router8.get("/", async (req, res) => {
     if (!tenant) {
       return res.status(400).json({ error: "Tenant parameter is required" });
     }
-    const tenantResult = await pool10.query(
+    const tenantResult = await pool7.query(
       "SELECT id FROM tenants WHERE slug = $1",
       [tenant]
     );
@@ -5915,7 +5571,7 @@ router8.get("/", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const result = await pool10.query(
+    const result = await pool7.query(
       `SELECT * FROM education_institutions 
        WHERE tenant_id = $1 
        ORDER BY display_order, name`,
@@ -5942,16 +5598,16 @@ var education_default = router8;
 
 // server/routes/dog-registration.ts
 import { Router as Router8 } from "express";
-import { Pool as Pool12 } from "pg";
+import { Pool as Pool9 } from "pg";
 
 // server/services/dog-registration-email.ts
-import { Pool as Pool11 } from "pg";
-var pool11 = new Pool11({
+import { Pool as Pool8 } from "pg";
+var pool8 = new Pool8({
   connectionString: process.env.DATABASE_URL || "postgresql://buergerapp_user:buergerapp_dev_2025@localhost:5432/buergerapp"
 });
 async function sendEmailToTownHall(registrationId) {
   try {
-    const result = await pool11.query(
+    const result = await pool8.query(
       "SELECT * FROM dog_registrations WHERE id = $1",
       [registrationId]
     );
@@ -6035,7 +5691,7 @@ Diese E-Mail wurde automatisch \xFCber die B\xFCrger-App Schieder-Schwalenberg g
 }
 async function sendConfirmationEmailToCitizen(registrationId) {
   try {
-    const result = await pool11.query(
+    const result = await pool8.query(
       "SELECT * FROM dog_registrations WHERE id = $1",
       [registrationId]
     );
@@ -6109,7 +5765,7 @@ Bei Fragen kontaktieren Sie uns unter: rathaus@schieder-schwalenberg.de
 
 // server/routes/dog-registration.ts
 var router9 = Router8();
-var pool12 = new Pool12({
+var pool9 = new Pool9({
   connectionString: process.env.DATABASE_URL || "postgresql://buergerapp_user:buergerapp_dev_2025@localhost:5432/buergerapp"
 });
 router9.post("/", async (req, res) => {
@@ -6139,7 +5795,7 @@ router9.post("/", async (req, res) => {
     if (!tenant || !ownerFirstName || !ownerLastName || !ownerStreet || !ownerHouseNumber || !ownerZip || !ownerCity || !ownerEmail || !dogName || !dogBreed || !dogGender || !dogBirthDate || !dogHoldingStartDate || !sepaIban || !sepaAccountHolder || !privacyAccepted) {
       return res.status(400).json({ error: "Pflichtfelder fehlen" });
     }
-    const tenantResult = await pool12.query(
+    const tenantResult = await pool9.query(
       "SELECT id FROM tenants WHERE slug = $1 LIMIT 1",
       [tenant]
     );
@@ -6147,7 +5803,7 @@ router9.post("/", async (req, res) => {
       return res.status(404).json({ error: "Tenant nicht gefunden" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const result = await pool12.query(
+    const result = await pool9.query(
       `INSERT INTO dog_registrations (
         tenant_id, owner_first_name, owner_last_name, owner_street, owner_house_number,
         owner_zip, owner_city, owner_email, owner_phone,
@@ -6204,7 +5860,7 @@ router9.get("/", async (req, res) => {
     if (!tenant) {
       return res.status(400).json({ error: "Tenant-Parameter fehlt" });
     }
-    const tenantResult = await pool12.query(
+    const tenantResult = await pool9.query(
       "SELECT id FROM tenants WHERE slug = $1 LIMIT 1",
       [tenant]
     );
@@ -6222,7 +5878,7 @@ router9.get("/", async (req, res) => {
       params.push(status);
     }
     query += " ORDER BY created_at DESC";
-    const result = await pool12.query(query, params);
+    const result = await pool9.query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching dog registrations:", error);
@@ -6236,7 +5892,7 @@ router9.get("/:id", async (req, res) => {
     if (!tenant) {
       return res.status(400).json({ error: "Tenant-Parameter fehlt" });
     }
-    const tenantResult = await pool12.query(
+    const tenantResult = await pool9.query(
       "SELECT id FROM tenants WHERE slug = $1 LIMIT 1",
       [tenant]
     );
@@ -6244,7 +5900,7 @@ router9.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Tenant nicht gefunden" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const result = await pool12.query(
+    const result = await pool9.query(
       "SELECT * FROM dog_registrations WHERE id = $1 AND tenant_id = $2",
       [id, tenantId]
     );
@@ -6329,9 +5985,9 @@ Antworten Sie direkt auf diese E-Mail, um den B\xFCrger zu kontaktieren.
 }
 
 // server/routes/contact-request.ts
-var { Pool: Pool13 } = pg5;
+var { Pool: Pool10 } = pg5;
 var router10 = Router9();
-var pool13 = new Pool13({
+var pool10 = new Pool10({
   host: "127.0.0.1",
   port: 5432,
   database: "buergerapp",
@@ -6358,7 +6014,7 @@ router10.post("/", async (req, res) => {
     });
   }
   try {
-    const tenantResult = await pool13.query(
+    const tenantResult = await pool10.query(
       "SELECT id, name FROM tenants WHERE slug = $1",
       [tenant]
     );
@@ -6367,7 +6023,7 @@ router10.post("/", async (req, res) => {
     }
     const tenantId = tenantResult.rows[0].id;
     const tenantName = tenantResult.rows[0].name;
-    const result = await pool13.query(
+    const result = await pool10.query(
       `INSERT INTO contact_requests (
         tenant_id, first_name, last_name, email, phone,
         subject, message, category, status, created_at, updated_at
@@ -6407,7 +6063,7 @@ router10.get("/", async (req, res) => {
     return res.status(400).json({ error: "Tenant parameter is required" });
   }
   try {
-    const tenantResult = await pool13.query(
+    const tenantResult = await pool10.query(
       "SELECT id FROM tenants WHERE slug = $1",
       [tenant]
     );
@@ -6415,7 +6071,7 @@ router10.get("/", async (req, res) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
     const tenantId = tenantResult.rows[0].id;
-    const result = await pool13.query(
+    const result = await pool10.query(
       `SELECT 
         id, first_name, last_name, email, phone,
         subject, message, category, status,
@@ -6446,7 +6102,7 @@ function getSql() {
 }
 router11.post("/requests", async (req, res) => {
   try {
-    const sql2 = getSql();
+    const sql5 = getSql();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
@@ -6465,7 +6121,7 @@ router11.post("/requests", async (req, res) => {
     } = req.body;
     const id = nanoid8();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    await sql2`
+    await sql5`
       INSERT INTO help_requests (
         id, tenant_id, created_by, created_by_name, category, description,
         district, meeting_point, timeframe, urgency, contact_method, phone_number,
@@ -6476,7 +6132,7 @@ router11.post("/requests", async (req, res) => {
         ${contactMethod}, ${phoneNumber || null}, 'open', ${now}, ${now}
       )
     `;
-    await sql2.end();
+    await sql5.end();
     res.json({ id, success: true });
   } catch (error) {
     console.error("Error creating help request:", error);
@@ -6485,7 +6141,7 @@ router11.post("/requests", async (req, res) => {
 });
 router11.get("/requests", async (req, res) => {
   try {
-    const sql2 = getSql();
+    const sql5 = getSql();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
@@ -6494,14 +6150,14 @@ router11.get("/requests", async (req, res) => {
     let result;
     if (category && category !== "all") {
       if (district) {
-        result = await sql2`
+        result = await sql5`
           SELECT * FROM help_requests
           WHERE tenant_id = ${tenant.id} AND status = 'open'
             AND category = ${category} AND district = ${district}
           ORDER BY created_at DESC
         `;
       } else {
-        result = await sql2`
+        result = await sql5`
           SELECT * FROM help_requests
           WHERE tenant_id = ${tenant.id} AND status = 'open'
             AND category = ${category}
@@ -6509,14 +6165,14 @@ router11.get("/requests", async (req, res) => {
         `;
       }
     } else if (district) {
-      result = await sql2`
+      result = await sql5`
         SELECT * FROM help_requests
         WHERE tenant_id = ${tenant.id} AND status = 'open'
           AND district = ${district}
         ORDER BY created_at DESC
       `;
     } else {
-      result = await sql2`
+      result = await sql5`
         SELECT * FROM help_requests
         WHERE tenant_id = ${tenant.id} AND status = 'open'
         ORDER BY created_at DESC
@@ -6525,7 +6181,7 @@ router11.get("/requests", async (req, res) => {
     if (urgency === "high") {
       result = result.filter((r) => r.urgency === "high");
     }
-    await sql2.end();
+    await sql5.end();
     res.json(result);
   } catch (error) {
     console.error("Error fetching help requests:", error);
@@ -6534,7 +6190,7 @@ router11.get("/requests", async (req, res) => {
 });
 router11.post("/offers", async (req, res) => {
   try {
-    const sql2 = getSql();
+    const sql5 = getSql();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
@@ -6552,7 +6208,7 @@ router11.post("/offers", async (req, res) => {
     } = req.body;
     const id = nanoid8();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    await sql2`
+    await sql5`
       INSERT INTO help_offers (
         id, tenant_id, created_by, created_by_name, categories, description,
         district, radius, availability, contact_method, phone_number,
@@ -6563,7 +6219,7 @@ router11.post("/offers", async (req, res) => {
         ${phoneNumber || null}, 'open', ${now}, ${now}
       )
     `;
-    await sql2.end();
+    await sql5.end();
     res.json({ id, success: true });
   } catch (error) {
     console.error("Error creating help offer:", error);
@@ -6572,7 +6228,7 @@ router11.post("/offers", async (req, res) => {
 });
 router11.get("/offers", async (req, res) => {
   try {
-    const sql2 = getSql();
+    const sql5 = getSql();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
@@ -6580,14 +6236,14 @@ router11.get("/offers", async (req, res) => {
     const { category, district } = req.query;
     let result;
     if (district) {
-      result = await sql2`
+      result = await sql5`
         SELECT * FROM help_offers
         WHERE tenant_id = ${tenant.id} AND status = 'open'
           AND district = ${district}
         ORDER BY created_at DESC
       `;
     } else {
-      result = await sql2`
+      result = await sql5`
         SELECT * FROM help_offers
         WHERE tenant_id = ${tenant.id} AND status = 'open'
         ORDER BY created_at DESC
@@ -6596,7 +6252,7 @@ router11.get("/offers", async (req, res) => {
     if (category && category !== "all") {
       result = result.filter((r) => r.categories && r.categories.includes(category));
     }
-    await sql2.end();
+    await sql5.end();
     res.json(result);
   } catch (error) {
     console.error("Error fetching help offers:", error);
@@ -6605,17 +6261,17 @@ router11.get("/offers", async (req, res) => {
 });
 router11.get("/all", async (req, res) => {
   try {
-    const sql2 = getSql();
+    const sql5 = getSql();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
     }
-    const requests = await sql2`
+    const requests = await sql5`
       SELECT *, 'request' as type FROM help_requests
       WHERE tenant_id = ${tenant.id} AND status = 'open'
       ORDER BY created_at DESC
     `;
-    const offers = await sql2`
+    const offers = await sql5`
       SELECT *, 'offer' as type FROM help_offers
       WHERE tenant_id = ${tenant.id} AND status = 'open'
       ORDER BY created_at DESC
@@ -6623,7 +6279,7 @@ router11.get("/all", async (req, res) => {
     const all = [...requests, ...offers].sort((a, b) => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-    await sql2.end();
+    await sql5.end();
     res.json(all);
   } catch (error) {
     console.error("Error fetching all items:", error);
@@ -6645,7 +6301,7 @@ function getSql2() {
 }
 router12.post("/conversations", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
@@ -6658,19 +6314,19 @@ router12.post("/conversations", async (req, res) => {
       helperId,
       helperName
     } = req.body;
-    const existing = await sql2`
+    const existing = await sql5`
       SELECT * FROM help_conversations
       WHERE tenant_id = ${tenant.id}
         AND ((request_id = ${requestId || null} AND requester_id = ${requesterId} AND helper_id = ${helperId})
           OR (offer_id = ${offerId || null} AND requester_id = ${requesterId} AND helper_id = ${helperId}))
     `;
     if (existing.length > 0) {
-      await sql2.end();
+      await sql5.end();
       return res.json({ id: existing[0].id, existing: true });
     }
     const id = nanoid9();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    await sql2`
+    await sql5`
       INSERT INTO help_conversations (
         id, tenant_id, request_id, offer_id, requester_id, requester_name,
         helper_id, helper_name, status, created_at, updated_at
@@ -6680,7 +6336,7 @@ router12.post("/conversations", async (req, res) => {
         'active', ${now}, ${now}
       )
     `;
-    await sql2.end();
+    await sql5.end();
     res.json({ id, success: true });
   } catch (error) {
     console.error("Error creating conversation:", error);
@@ -6689,21 +6345,21 @@ router12.post("/conversations", async (req, res) => {
 });
 router12.get("/conversations/:id", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
     }
     const { id } = req.params;
-    const conversation = await sql2`
+    const conversation = await sql5`
       SELECT * FROM help_conversations
       WHERE id = ${id} AND tenant_id = ${tenant.id}
     `;
     if (conversation.length === 0) {
-      await sql2.end();
+      await sql5.end();
       return res.status(404).json({ error: "Conversation not found" });
     }
-    await sql2.end();
+    await sql5.end();
     res.json(conversation[0]);
   } catch (error) {
     console.error("Error fetching conversation:", error);
@@ -6712,7 +6368,7 @@ router12.get("/conversations/:id", async (req, res) => {
 });
 router12.get("/conversations", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
@@ -6721,7 +6377,7 @@ router12.get("/conversations", async (req, res) => {
     if (!userId) {
       return res.status(400).json({ error: "userId required" });
     }
-    const conversations = await sql2`
+    const conversations = await sql5`
       SELECT c.*, 
         (SELECT COUNT(*) FROM help_messages m 
          WHERE m.conversation_id = c.id AND m.sender_id != ${userId} AND m.read = false) as unread_count,
@@ -6742,7 +6398,7 @@ router12.get("/conversations", async (req, res) => {
         c.created_at
       ) DESC
     `;
-    await sql2.end();
+    await sql5.end();
     res.json(conversations);
   } catch (error) {
     console.error("Error fetching conversations:", error);
@@ -6751,7 +6407,7 @@ router12.get("/conversations", async (req, res) => {
 });
 router12.post("/messages", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const {
       conversationId,
       senderId,
@@ -6760,19 +6416,19 @@ router12.post("/messages", async (req, res) => {
     } = req.body;
     const id = nanoid9();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    await sql2`
+    await sql5`
       INSERT INTO help_messages (
         id, conversation_id, sender_id, sender_name, message, read, created_at
       ) VALUES (
         ${id}, ${conversationId}, ${senderId}, ${senderName}, ${message}, false, ${now}
       )
     `;
-    await sql2`
+    await sql5`
       UPDATE help_conversations
       SET updated_at = ${now}
       WHERE id = ${conversationId}
     `;
-    await sql2.end();
+    await sql5.end();
     res.json({ id, success: true });
   } catch (error) {
     console.error("Error sending message:", error);
@@ -6781,24 +6437,24 @@ router12.post("/messages", async (req, res) => {
 });
 router12.post("/conversations/:id/messages", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const { id } = req.params;
     const { senderId, senderName, message } = req.body;
     const messageId = nanoid9();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    await sql2`
+    await sql5`
       INSERT INTO help_messages (
         id, conversation_id, sender_id, sender_name, message, read, created_at
       ) VALUES (
         ${messageId}, ${id}, ${senderId}, ${senderName}, ${message}, false, ${now}
       )
     `;
-    await sql2`
+    await sql5`
       UPDATE help_conversations
       SET updated_at = ${now}
       WHERE id = ${id}
     `;
-    await sql2.end();
+    await sql5.end();
     res.json({ id: messageId, success: true });
   } catch (error) {
     console.error("Error sending message:", error);
@@ -6807,16 +6463,16 @@ router12.post("/conversations/:id/messages", async (req, res) => {
 });
 router12.get("/conversations/:id/messages", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const { id } = req.params;
     const { userId } = req.query;
-    const messages = await sql2`
+    const messages = await sql5`
       SELECT * FROM help_messages
       WHERE conversation_id = ${id}
       ORDER BY created_at ASC
     `;
     if (userId) {
-      await sql2`
+      await sql5`
         UPDATE help_messages
         SET read = true
         WHERE conversation_id = ${id}
@@ -6824,7 +6480,7 @@ router12.get("/conversations/:id/messages", async (req, res) => {
           AND read = false
       `;
     }
-    await sql2.end();
+    await sql5.end();
     res.json(messages);
   } catch (error) {
     console.error("Error fetching messages:", error);
@@ -6833,16 +6489,16 @@ router12.get("/conversations/:id/messages", async (req, res) => {
 });
 router12.get("/messages/:conversationId", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const { conversationId } = req.params;
     const { userId } = req.query;
-    const messages = await sql2`
+    const messages = await sql5`
       SELECT * FROM help_messages
       WHERE conversation_id = ${conversationId}
       ORDER BY created_at ASC
     `;
     if (userId) {
-      await sql2`
+      await sql5`
         UPDATE help_messages
         SET read = true
         WHERE conversation_id = ${conversationId}
@@ -6850,7 +6506,7 @@ router12.get("/messages/:conversationId", async (req, res) => {
           AND read = false
       `;
     }
-    await sql2.end();
+    await sql5.end();
     res.json(messages);
   } catch (error) {
     console.error("Error fetching messages:", error);
@@ -6859,27 +6515,27 @@ router12.get("/messages/:conversationId", async (req, res) => {
 });
 router12.post("/conversations/:id/share-contact", async (req, res) => {
   try {
-    const sql2 = getSql2();
+    const sql5 = getSql2();
     const tenant = req.tenant;
     if (!tenant) {
       return res.status(400).json({ error: "Tenant not found" });
     }
     const { id } = req.params;
     const { userId } = req.body;
-    const conversation = await sql2`
+    const conversation = await sql5`
       SELECT * FROM help_conversations
       WHERE id = ${id} AND tenant_id = ${tenant.id}
     `;
     if (conversation.length === 0) {
-      await sql2.end();
+      await sql5.end();
       return res.status(404).json({ error: "Conversation not found" });
     }
     const conv = conversation[0];
     if (conv.requester_id !== userId && conv.helper_id !== userId) {
-      await sql2.end();
+      await sql5.end();
       return res.status(403).json({ error: "Unauthorized" });
     }
-    await sql2`
+    await sql5`
       UPDATE help_conversations
       SET contact_shared = true
       WHERE id = ${id}
@@ -6887,7 +6543,7 @@ router12.post("/conversations/:id/share-contact", async (req, res) => {
     const senderName = conv.requester_id === userId ? conv.requester_name : conv.helper_name;
     const messageId = nanoid9();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    await sql2`
+    await sql5`
       INSERT INTO help_messages (
         id, conversation_id, sender_id, sender_name, message, read, created_at
       ) VALUES (
@@ -6896,7 +6552,7 @@ router12.post("/conversations/:id/share-contact", async (req, res) => {
         false, ${now}
       )
     `;
-    await sql2.end();
+    await sql5.end();
     res.json({ success: true });
   } catch (error) {
     console.error("Error sharing contact:", error);
@@ -6980,6 +6636,22 @@ async function startServer() {
       hasDatabase: !!process.env.DATABASE_URL,
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
+  });
+  app.get("/api/debug/tenants", async (req, res) => {
+    try {
+      const pg6 = await import("pg");
+      const { Client } = pg6.default;
+      const client = new Client({ connectionString: process.env.DATABASE_URL });
+      await client.connect();
+      const result = await client.query("SELECT * FROM tenants");
+      await client.end();
+      res.json({
+        count: result.rows.length,
+        tenants: result.rows
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
   app.use(express2.json({ limit: "50mb" }));
   app.use(express2.urlencoded({ limit: "50mb", extended: true }));

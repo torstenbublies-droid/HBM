@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
     "build": "vite build && pnpm copy-server-files",
-    "copy-server-files": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && cp -r drizzle dist/",
+    "copy-server-files": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && cp -r drizzle dist/ && mkdir -p dist/server/scripts && cp server/scripts/import-data-psql.sh dist/server/scripts/ && cp complete_database_backup.sql dist/",
     "start": "node dist/index.js",
     "migrate": "tsx server/scripts/run-migrations.ts",
     "import-data": "bash server/scripts/import-data-psql.sh",
