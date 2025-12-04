@@ -1,0 +1,84 @@
+{
+  "id": "tenant_hornbadmeinberg_001",
+  "name": "Horn-Bad Meinberg",
+  "slug": "hornbadmeinberg",
+  "domain": "hornbadmeinberg.buergerapp.de",
+  "website": "https://www.horn-badmeinberg.de/",
+  "contact": {
+    "email": "post@horn-badmeinberg.de",
+    "phone": "05234 / 201 - 0",
+    "fax": "05234 / 201 - 222",
+    "address": {
+      "street": "Marktplatz 4",
+      "zip": "32805",
+      "city": "Horn-Bad Meinberg"
+    }
+  },
+  "openingHours": {
+    "monday": "8:30-12:00 und 14:00-16:00 Uhr",
+    "tuesday": "8:30-12:00 Uhr",
+    "wednesday": "7:30-12:30 Uhr",
+    "thursday": "8:30-12:00 und 14:00-17:30 Uhr",
+    "friday": "8:30-12:00 Uhr"
+  },
+  "branding": {
+    "primaryColor": "#1e40af",
+    "secondaryColor": "#3b82f6",
+    "logoUrl": null
+  },
+  "features": {
+    "news": true,
+    "events": true,
+    "departments": true,
+    "issueReports": true,
+    "waste": true,
+    "alerts": true,
+    "tourism": true,
+    "education": true,
+    "business": true,
+    "clubs": true,
+    "council": true,
+    "services": true,
+    "neighborhoodHelp": true,
+    "chatbot": true
+  },
+  "scraping": {
+    "news": {
+      "enabled": true,
+      "url": "https://www.horn-badmeinberg.de/Verwaltung/Nachrichten/",
+      "schedule": "0 0 1 */2 * *"
+    },
+    "events": {
+      "enabled": true,
+      "url": "https://www.horn-badmeinberg.de/Leben-Freizeit/Veranstaltungen/Traditionelle-Feste/",
+      "schedule": "0 10 1 */2 * *"
+    },
+    "departments": {
+      "enabled": true,
+      "url": "https://www.horn-badmeinberg.de/Verwaltung/B%C3%BCrgerberatung/Mitarbeitenden-Verzeichnis/",
+      "schedule": "0 20 1 */2 * *"
+    },
+    "clubs": {
+      "enabled": true,
+      "url": "https://www.horn-badmeinberg.de/Leben-Freizeit/Sport-Freizeit/Vereine-und-Verb%C3%A4nde/",
+      "schedule": "0 0 1 * * 0"
+    }
+  },
+  "chatbot": {
+    "name": "Horn-Bad Meinberg Assistent",
+    "welcomeMessage": "Hallo! Ich bin Ihr digitaler Assistent für Horn-Bad Meinberg. Wie kann ich Ihnen helfen?",
+    "systemPrompt": "Du bist ein hilfreicher Assistent für die Stadt Horn-Bad Meinberg. Beantworte Fragen zu Dienstleistungen, Veranstaltungen, Öffnungszeiten und lokalen Informationen."
+  },
+  "weather": {
+    "city": "Horn-Bad Meinberg",
+    "lat": null,
+    "lon": null
+  },
+  "notes": [
+    "Tenant erstellt am: 2. Dezember 2025",
+    "Status: Basis-Konfiguration fertig",
+    "TODO: Scraping-URLs vom User erhalten",
+    "TODO: Wetter-Koordinaten hinzufügen",
+    "TODO: Logo hochladen (optional)"
+  ]
+}

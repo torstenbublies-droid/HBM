@@ -1,0 +1,66 @@
+{
+  "comment": "Abfuhrkalender Schieder-Schwalenberg November-Dezember 2025 (FINAL - genau aus PDF)",
+  "year": 2025,
+  "gemeinsame_tonnen": {
+    "comment": "Diese Tonnen gelten für ALLE Ortsteile gleich",
+    "restmuell_grau": [
+      "2025-11-04",
+      "2025-11-11",
+      "2025-11-18",
+      "2025-11-25",
+      "2025-12-09",
+      "2025-12-16",
+      "2025-12-23",
+      "2025-12-30"
+    ],
+    "altpapier_blau": [
+      "2025-11-04",
+      "2025-11-18",
+      "2025-12-02",
+      "2025-12-16",
+      "2025-12-30"
+    ],
+    "gelber_sack": [
+      "2025-11-03",
+      "2025-11-10",
+      "2025-11-17",
+      "2025-11-26",
+      "2025-12-03",
+      "2025-12-10",
+      "2025-12-17",
+      "2025-12-22",
+      "2025-12-23",
+      "2025-12-31"
+    ],
+    "biotonne_gruen": [
+      "2025-11-04",
+      "2025-11-11",
+      "2025-11-18",
+      "2025-11-25",
+      "2025-12-09",
+      "2025-12-16",
+      "2025-12-22",
+      "2025-12-23",
+      "2025-12-30"
+    ]
+  },
+  "gruenschnitt_ortsteile": {
+    "comment": "Grünschnitt (Saisonbiotonne) ist unterschiedlich je nach Ortsteil",
+    "Schwalenberg": [
+      "2025-11-07",
+      "2025-12-05"
+    ],
+    "Lothe": [],
+    "Brakelsiek": [
+      "2025-11-15"
+    ],
+    "Wöbbel": [
+      "2025-11-11",
+      "2025-11-22"
+    ],
+    "Glashütte/Siekholz": [
+      "2025-11-29"
+    ],
+    "Schieder": []
+  }
+}

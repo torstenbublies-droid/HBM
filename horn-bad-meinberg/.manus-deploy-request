@@ -1,0 +1,7 @@
+{
+  "subdomain": "horn-bad-meinberg",
+  "name": "Horn-Bad Meinberg Bürger-App",
+  "description": "Multi-Tenant Bürger-App für Horn-Bad Meinberg mit News, Events, Chatbot und allen Features",
+  "auto_deploy": true,
+  "timestamp": "2025-12-04T13:00:00Z"
+}

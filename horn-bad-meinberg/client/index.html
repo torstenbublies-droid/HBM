@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1"
+    />
+    <link rel="icon" type="image/png" href="https://placehold.co/40x40/3b82f6/ffffff?text=S" />
+    <link rel="apple-touch-icon" href="https://placehold.co/40x40/3b82f6/ffffff?text=S" />
+    <title>Bürger-App Schieder-Schwalenberg</title>
+    
+    <!-- OneSignal Push Notifications -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      // Schutz gegen doppelte Initialisierung
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.__osInitOnce = false;
+
+      // Manually register service worker first
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/OneSignalSDKWorker.js', { scope: '/' })
+          .then(registration => {
+            console.log('[Push] Service Worker registered manually:', registration.scope);
+          })
+          .catch(error => {
+            console.error('[Push] Service Worker registration failed:', error);
+          });
+      }
+
+      // OneSignal disabled for local development
+      console.log("[Push] OneSignal disabled in development mode");
+      
+      // Uncomment for production:
+      /*
+      OneSignalDeferred.push(async function(OneSignal) {
+        if (window.__osInitOnce) return;
+        window.__osInitOnce = true;
+
+        try {
+          await OneSignal.init({
+            appId: "5a9ded2d-f692-4e8c-9b3b-4233fe2b1ecc",
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/' },
+            allowLocalhostAsSecureOrigin: true
+          });
+          console.log("[Push] OneSignal init OK");
+        } catch (e) {
+          console.error("[Push] Init-Fehler:", e);
+        }
+      });
+      */
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+
+  </body>
+</html>
