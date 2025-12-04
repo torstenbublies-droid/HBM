@@ -65,10 +65,4 @@ export async function importData() {
   }
 }
 
-// Run if called directly
-if (require.main === module) {
-  importData().catch(err => {
-    console.error("Error in data import", err);
-    process.exit(1);
-  });
-}
+// Auto-run is handled by index.ts startup sequence

@@ -28,10 +28,4 @@ export async function runMigrations() {
   }
 }
 
-// Führe die Migration aus, wenn das Skript direkt aufgerufen wird
-if (require.main === module) {
-  runMigrations().catch(err => {
-    console.error("Fehler im eigenständigen Migrations-Lauf", err);
-    process.exit(1);
-  });
-}
+// Auto-run is handled by index.ts startup sequence
