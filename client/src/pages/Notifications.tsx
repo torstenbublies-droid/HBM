@@ -5,19 +5,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
-import PushNotificationButton from "@/components/PushNotificationButton";
+import PushNotificationButton, { isPushNotificationsEnabled } from "@/components/PushNotificationButton";
 import { useReadNotifications } from "@/hooks/useReadNotifications";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTenant } from "@/contexts/TenantContext";
 
 export default function Notifications() {
   const { tenant } = useTenant();
-  const { data: notifications, isLoading } = trpc.directus.getPushNotifications.useQuery();
+  const [pushEnabled, setPushEnabled] = useState(true);
+  const { data: notifications, isLoading } = trpc.directus.getPushNotifications.useQuery(undefined, {
+    enabled: pushEnabled,
+  });
   const { markAllAsRead, isRead } = useReadNotifications();
+
+  // Listen for push notification status changes
+  useEffect(() => {
+    setPushEnabled(isPushNotificationsEnabled());
+    
+    const handleStatusChange = (e: CustomEvent) => {
+      setPushEnabled(e.detail.enabled);
+    };
+    
+    window.addEventListener("pushNotificationsStatusChanged", handleStatusChange as EventListener);
+    return () => {
+      window.removeEventListener("pushNotificationsStatusChanged", handleStatusChange as EventListener);
+    };
+  }, []);
 
   // Mark all notifications as read after a short delay to allow viewing
   useEffect(() => {
-    if (notifications && notifications.length > 0) {
+    if (notifications && notifications.length > 0 && pushEnabled) {
       // Wait 2 seconds before marking as read, so user can see them
       const timer = setTimeout(() => {
         const notificationIds = notifications.map(n => n.id);
@@ -27,11 +44,11 @@ export default function Notifications() {
       // Cleanup timer on unmount
       return () => clearTimeout(timer);
     }
-  }, [notifications, markAllAsRead]);
+  }, [notifications, markAllAsRead, pushEnabled]);
 
   // Separate notifications into unread and read
-  const unreadNotifications = notifications?.filter(n => !isRead(n.id)) || [];
-  const readNotifications = notifications?.filter(n => isRead(n.id)) || [];
+  const unreadNotifications = pushEnabled ? (notifications?.filter(n => !isRead(n.id)) || []) : [];
+  const readNotifications = pushEnabled ? (notifications?.filter(n => isRead(n.id)) || []) : [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -68,34 +85,37 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6">
+      {/* Header - responsive */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <button
                 onClick={() => window.location.href = `/?tenant=${tenant?.slug || 'hornbadmeinberg'}`}
-                className="hover:bg-blue-700 p-2 rounded-lg transition-colors"
+                className="hover:bg-blue-700 p-2 rounded-lg transition-colors flex-shrink-0"
                 aria-label="Zurück zur Startseite"
               >
                 <ArrowLeft className="h-6 w-6" />
               </button>
-              <Bell className="h-8 w-8" />
-              <div>
-                <h1 className="text-2xl font-bold">Benachrichtigungen</h1>
-                <p className="text-blue-100 text-sm">
-                  {notifications && notifications.length > 0 
-                    ? `${notifications.length} ${notifications.length === 1 ? 'Benachrichtigung' : 'Benachrichtigungen'} (${unreadNotifications.length} ungelesen)`
-                    : "Keine Benachrichtigungen"}
+              <Bell className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold">Benachrichtigungen</h1>
+                <p className="text-blue-100 text-xs sm:text-sm truncate">
+                  {pushEnabled
+                    ? (notifications && notifications.length > 0 
+                      ? `${notifications.length} ${notifications.length === 1 ? 'Benachrichtigung' : 'Benachrichtigungen'} (${unreadNotifications.length} ungelesen)`
+                      : "Keine Benachrichtigungen")
+                    : "Benachrichtigungen deaktiviert"}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <PushNotificationButton />
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => window.location.reload()}
+                className="whitespace-nowrap"
               >
                 Aktualisieren
               </Button>
@@ -106,7 +126,17 @@ export default function Notifications() {
 
       {/* Notifications List */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {!notifications || notifications.length === 0 ? (
+        {!pushEnabled ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <BellOff className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-600">Benachrichtigungen sind deaktiviert</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Aktiviere Benachrichtigungen, um Push-Nachrichten zu empfangen
+              </p>
+            </CardContent>
+          </Card>
+        ) : !notifications || notifications.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <Bell className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -134,14 +164,14 @@ export default function Notifications() {
                             🔔
                           </span>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
                               <CardTitle className="text-lg leading-tight">
                                 {notification.title}
                               </CardTitle>
                               <Badge className="bg-blue-500">Neu</Badge>
                               {getStatusBadge(notification.status)}
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mt-2">
                               {notification.scheduled_at && (
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
@@ -185,13 +215,13 @@ export default function Notifications() {
                             🔔
                           </span>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
                               <CardTitle className="text-lg leading-tight text-gray-600">
                                 {notification.title}
                               </CardTitle>
                               {getStatusBadge(notification.status)}
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mt-2">
                               {notification.scheduled_at && (
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
